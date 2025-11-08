@@ -1,6 +1,6 @@
 namespace Expressions
 {
-    interface IExpression;
+    interface IExpression { IExpression? LeftExpression { get; } IExpression? RightExpression { get; } };
     interface IConstantExpression : IExpression { int Value { get; } }
     interface IVariableExpression : IExpression { string Name { get; } }
     interface IBinaryExpression : IExpression { IExpression Left { get; } IExpression Right { get; } OperatorSign Sign { get; } }
@@ -11,7 +11,7 @@ namespace Expressions
 
     class ConstantExpression : IConstantExpression
     {
-        public int Value { get; }
+        public int Value { get; }        
 
         public ConstantExpression(int value = 0)
         {
@@ -19,6 +19,10 @@ namespace Expressions
         }
 
         public override string ToString() => Value.ToString();
+
+        public IExpression? LeftExpression => null;
+
+        public IExpression? RightExpression => null;
     }
 
     class VariableExpression : IVariableExpression
@@ -31,6 +35,10 @@ namespace Expressions
         }
 
         public override string ToString() => Name;
+
+        public IExpression? LeftExpression => null;
+
+        public IExpression? RightExpression => null;
     }
 
     class BinaryExpression : IBinaryExpression
@@ -63,6 +71,10 @@ namespace Expressions
                 default: throw new Exception();
             }
         }
+
+        public IExpression? LeftExpression => Left;
+
+        public IExpression? RightExpression => Right;
     }
 
     class Function : IFunction
@@ -92,5 +104,9 @@ namespace Expressions
                 default: throw new Exception();
             }
         }
+
+        public IExpression? LeftExpression => Argument;
+
+        public IExpression? RightExpression => null;
     }
 }

@@ -1,4 +1,5 @@
-﻿using Expressions;
+﻿using ExpressionOptimizer;
+using Expressions;
 
 // Create the variable 'x'
 IExpression variableX = new VariableExpression("x");
@@ -43,5 +44,13 @@ IExpression finalExpression = new BinaryExpression(
     OperatorSign.Plus
 );
 
-Console.WriteLine(finalExpression);
+//Console.WriteLine(finalExpression);
 // Output: ((sin(7 * (2 + x)) - 7 * (2 + x)) + cos(x))
+
+ExpressionTreeTraverser traverser = new ExpressionTreeTraverser(finalExpression);
+
+IExpression? expr;
+while ((expr = traverser.next()) != null)
+{
+    Console.WriteLine(expr);
+}
