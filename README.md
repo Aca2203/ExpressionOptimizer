@@ -109,6 +109,21 @@ The optimizer uses a string-based caching mechanism:
 4. If not found, clones the expression and adds it to the cache
 5. Recursively processes all child expressions
 
+### Complexity Analysis
+
+- **n** = number of expressions in the expression tree
+- **m** = average length of string representation per expression
+
+**Time Complexity:** O(n × m)
+- Each expression is visited once, and string operations (ToString, dictionary lookup) take O(m) time
+- For typical balanced expression trees, this simplifies to approximately O(n log n)
+
+**Space Complexity:** O(n × m)
+- The cache dictionary stores at most n unique sub-expressions
+- Each string key requires O(m) space
+- The optimized expression tree requires O(n) space
+- Recursion stack depth is O(h) where h is the tree height
+
 ### Commutative Operator Handling
 
 For commutative operators (+ and *), the string representation automatically orders operands alphabetically, ensuring that expressions like `(2 + x)` and `(x + 2)` are recognized as duplicates:
