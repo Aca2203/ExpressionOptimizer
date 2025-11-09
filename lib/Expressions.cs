@@ -41,45 +41,37 @@ namespace Expressions
 
         public BinaryExpression(IExpression leftExpression, IExpression rightExpression, OperatorSign sign)
         {
-            Left = leftExpression;
-            Right = rightExpression;
+            Left = leftExpression ?? throw new ArgumentNullException(nameof(leftExpression));
+            Right = rightExpression ?? throw new ArgumentNullException(nameof(rightExpression));
             Sign = sign;
         }
 
         public override string ToString() => $"({Left} {ToString(Sign)} {Right})";
 
-        protected string ToString(OperatorSign sign)
+        protected static string ToString(OperatorSign sign) => sign switch
         {
-            switch(sign)
-            {
-                case OperatorSign.Plus: return "+";
-
-                case OperatorSign.Minus: return "-";
-
-                case OperatorSign.Multiply: return "*";
-
-                case OperatorSign.Divide: return "/";
-
-                default: throw new Exception("Invalid operator sign");
-            }
-        }
+            OperatorSign.Plus => "+",
+            OperatorSign.Minus => "-",
+            OperatorSign.Multiply => "*",
+            OperatorSign.Divide => "/",
+            _ => throw new Exception("Invalid operator sign")
+        };
     }
 
     class Function : IFunction
     {
         public FunctionKind Kind { get; }
-
         public IExpression Argument { get; }
 
         public Function(FunctionKind kind, IExpression argument)
         {
             Kind = kind;
-            Argument = argument;
+            Argument = argument ?? throw new ArgumentNullException(nameof(argument));
         }
 
         public override string ToString() => $"{ToString(Kind)}({Argument})";
 
-        protected string ToString(FunctionKind kind) => kind.ToString().ToLower();
+        protected static string ToString(FunctionKind kind) => kind.ToString().ToLower();
     }
 
     class ExpressionOptimizer
@@ -88,9 +80,8 @@ namespace Expressions
         {
             if (expression == null) return null;
 
-            Dictionary<string, IExpression> cache = new Dictionary<string, IExpression>();
-            IExpression optimizedExpression = RemoveDuplicates(expression, cache);
-            return optimizedExpression;
+            Dictionary<string, IExpression> cache = new();
+            return RemoveDuplicates(expression, cache);
         }
 
         protected static IExpression RemoveDuplicates(IExpression expression, Dictionary<string, IExpression> cache)
@@ -104,18 +95,13 @@ namespace Expressions
             return newExpression;
         }
 
-        protected static IExpression CloneExpression(IExpression expression, Dictionary<string, IExpression> cache)
+        protected static IExpression CloneExpression(IExpression expression, Dictionary<string, IExpression> cache) => expression switch
         {
-            IExpression clonedExpression = expression switch
-            {
-                ConstantExpression c => new ConstantExpression(c.Value),
-                VariableExpression v => new VariableExpression(v.Name),
-                BinaryExpression b => new BinaryExpression(RemoveDuplicates(b.Left, cache), RemoveDuplicates(b.Right, cache), b.Sign),
-                Function f => new Function(f.Kind, RemoveDuplicates(f.Argument, cache)),
-                _ => throw new Exception("Invalid expression type")
-            };
-
-            return clonedExpression;
-        }
+            ConstantExpression c => new ConstantExpression(c.Value),
+            VariableExpression v => new VariableExpression(v.Name),
+            BinaryExpression b => new BinaryExpression(RemoveDuplicates(b.Left, cache), RemoveDuplicates(b.Right, cache), b.Sign),
+            Function f => new Function(f.Kind, RemoveDuplicates(f.Argument, cache)),
+            _ => throw new Exception("Invalid expression type")
+        };
     }
 }

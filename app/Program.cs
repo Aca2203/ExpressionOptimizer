@@ -1,19 +1,22 @@
 ﻿using Expressions;
-static void PrintExpression(IExpression? expr, string indent = "")
+
+static void PrintExpression(IExpression? expr, HashSet<int> differentExpressions, string indent = "")
 {
     if (expr == null) return;
 
     Console.WriteLine($"{indent}{expr} (Hash: {expr.GetHashCode()})");
 
+    differentExpressions.Add(expr.GetHashCode());
+
     if (expr is IBinaryExpression bin)
     {
-        PrintExpression(bin.Left, indent + "  ");
-        PrintExpression(bin.Right, indent + "  ");
+        PrintExpression(bin.Left, differentExpressions, indent + "   ");
+        PrintExpression(bin.Right, differentExpressions, indent + "   ");
     }
     else if (expr is IFunction func)
     {
-        PrintExpression(func.Argument, indent + "  ");
-    }
+        PrintExpression(func.Argument, differentExpressions, indent + "   ");
+    }    
 }
 
 // (2 + x)
@@ -62,17 +65,29 @@ IExpression binaryExpression = new BinaryExpression(
 );
 
 // Complete expression: (sin(7*(2+x)) - 7*(2+x)) + cos(x)
-IExpression finalExpression = new BinaryExpression(
+IExpression original = new BinaryExpression(
     binaryExpression,
     cosExpression,
     OperatorSign.Plus
 );
 
+HashSet<int> differentExpressions = new();
+
 Console.WriteLine("Original expression:");
-PrintExpression(finalExpression);
+PrintExpression(original, differentExpressions);
+
+int numberOfExpressionsOriginal = differentExpressions.Count;
+Console.WriteLine($"Number of different expressions: {numberOfExpressionsOriginal}");
 
 // Optimize
-IExpression? optimized = ExpressionOptimizer.Optimize(finalExpression);
+IExpression? optimized = ExpressionOptimizer.Optimize(original);
+
+differentExpressions.Clear();
 
 Console.WriteLine("\nOptimized expression:");
-PrintExpression(optimized);
+PrintExpression(optimized, differentExpressions);
+
+int numberOfExpressionsOptimized = differentExpressions.Count;
+Console.WriteLine($"Number of different expressions: {numberOfExpressionsOptimized}");
+
+Console.WriteLine($"\nNumber of duplicates removed: {numberOfExpressionsOriginal - numberOfExpressionsOptimized}");
