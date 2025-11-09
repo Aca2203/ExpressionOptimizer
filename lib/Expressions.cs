@@ -9,6 +9,28 @@ namespace Expressions
     enum FunctionKind { Sin, Cos, Max }
     enum OperatorSign { Plus, Minus, Multiply, Divide }
 
+    static class OperatorSignExtensions
+    {
+        public static bool IsCommutative(this OperatorSign sign)
+        {
+            return sign == OperatorSign.Plus || sign == OperatorSign.Multiply;
+        }
+
+        public static string AsSymbol(this OperatorSign sign) => sign switch
+        {
+            OperatorSign.Plus => "+",
+            OperatorSign.Minus => "-",
+            OperatorSign.Multiply => "*",
+            OperatorSign.Divide => "/",
+            _ => throw new Exception("Invalid operator sign")
+        };
+    }
+
+    static class FunctionKindExtensions
+    {
+        public static string AsName(this FunctionKind kind) => kind.ToString().ToLower();
+    }
+
     class ConstantExpression : IConstantExpression
     {
         public int Value { get; }
@@ -46,16 +68,22 @@ namespace Expressions
             Sign = sign;
         }
 
-        public override string ToString() => $"({Left} {ToString(Sign)} {Right})";
+        public override string ToString() {
+            string left = Left.ToString()!;
+            string right = Right.ToString()!;
 
-        protected static string ToString(OperatorSign sign) => sign switch
-        {
-            OperatorSign.Plus => "+",
-            OperatorSign.Minus => "-",
-            OperatorSign.Multiply => "*",
-            OperatorSign.Divide => "/",
-            _ => throw new Exception("Invalid operator sign")
-        };
+            if (Sign.IsCommutative())
+            {
+                if (string.Compare(left, right) > 0)
+                {
+                    var temp = left;
+                    left = right;
+                    right = temp;
+                }
+            }
+
+            return $"({left} {Sign.AsSymbol()} {right})";
+        }        
     }
 
     class Function : IFunction
@@ -69,9 +97,7 @@ namespace Expressions
             Argument = argument ?? throw new ArgumentNullException(nameof(argument));
         }
 
-        public override string ToString() => $"{ToString(Kind)}({Argument})";
-
-        protected static string ToString(FunctionKind kind) => kind.ToString().ToLower();
+        public override string ToString() => $"{Kind.AsName()}({Argument})";        
     }
 
     class ExpressionOptimizer
@@ -93,7 +119,7 @@ namespace Expressions
 
             cache[key] = newExpression;
             return newExpression;
-        }
+        }     
 
         protected static IExpression CloneExpression(IExpression expression, Dictionary<string, IExpression> cache) => expression switch
         {
