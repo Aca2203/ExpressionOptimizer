@@ -105,6 +105,7 @@ class Program
 
         // Print how many duplicates were removed
         Console.WriteLine($"Duplicates removed: {uniqueBefore.Count - uniqueAfter.Count}");
+        Console.WriteLine($"Memory saved: {((double)(uniqueBefore.Count - uniqueAfter.Count) / uniqueBefore.Count) * 100:F2}%");
     }
 
     // Recursively counts unique sub-expressions using their hash codes
